@@ -44,9 +44,35 @@ def main():
 
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
+    if not chat.choices or len(chat.choices) == 0:
+        raise RuntimeError("no choices in response after reading file")
+        
+    choice = chat.choices[0]
+    if choice.message.tool_call:
+        tool_call = choice.message.tool_call
+        if tool_call.name == "Read":
+            file_path = tool_call.arguments.get("file_path")
+            if not file_path:
+                raise RuntimeError("file_path argument is missing in tool call")
+            try:
+                with open(file_path, "r") as f:
+                    file_contents = f.read()
+            except Exception as e:
+                raise RuntimeError(f"Failed to read file {file_path}: {e}")
 
-    # TODO: Uncomment the following line to pass the first stage
-    print(chat.choices[0].message.content)
+            print(f"{file_contents}", file=sys.stderr)
+            # Send the file contents back to the model
+            # chat = client.chat.completions.create(
+            #     model="anthropic/claude-haiku-4.5",
+            #     messages=[
+            #         {"role": "user", "content": args.p},
+            #         {"role": "assistant", "content": choice.message.content},
+            #         {"role": "tool", "name": "Read", "content": file_contents}
+            #     ]
+            # )
+            # error handling
+    else:
+        print(chat.choices[0].message.content)
 
 
 if __name__ == "__main__":

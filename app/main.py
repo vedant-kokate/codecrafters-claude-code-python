@@ -36,22 +36,21 @@ def get_chat_response(client, messages):
             "name": "Write",
             "description": "Write content to a file",
             "parameters": {
-                "type": "object",
-                "properties": {
-                    "file_path": {
-                        "type": "string",
-                        "description": "The path to the file to write"
-                    },
-                    "content": {
-                        "type": "string",
-                        "description": "The content to write to the file"
-                    }
+            "type": "object",
+            "required": ["file_path", "content"],
+            "properties": {
+                "file_path": {
+                "type": "string",
+                "description": "The path of the file to write to"
                 },
-                "required": ["file_path", "content"]
+                "content": {
+                "type": "string",
+                "description": "The content to write to the file"
+                }
+            }
             }
         }
-    }
-    ])
+        }])
     return chat
 
 def tool_write(tool_call):

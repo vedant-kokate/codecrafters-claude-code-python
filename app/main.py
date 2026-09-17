@@ -60,7 +60,7 @@ def main():
             except Exception as e:
                 raise RuntimeError(f"Failed to read file {file_path}: {e}")
 
-            print(f"{file_contents}", file=sys.stderr)
+            print(f"{file_contents}")
     else:
         print(chat.choices[0].message.content)
 

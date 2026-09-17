@@ -49,8 +49,8 @@ def main():
         
     choice = chat.choices[0]
     print(f"Choice: {choice.message}", file=sys.stderr)
-    if choice.message.tool_call:
-        tool_call = choice.message.tool_call
+    if choice.message.tool_calls:
+        tool_call = choice.message.tool_calls[0]
         if tool_call.name == "Read":
             file_path = tool_call.arguments.get("file_path")
             if not file_path:

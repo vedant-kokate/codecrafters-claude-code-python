@@ -122,7 +122,7 @@ def main():
                 messages.append({"role": "tool", "content": file_contents, "tool_call_id": tool_call.id})
             elif tool_call.function.name == "Write":
                 tool_write(tool_call)
-                messages.append({"role": "tool", "tool_call_id": tool_call.id})
+                messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": "File written successfully"})
     final_response = messages[-1]
     print(final_response.content)
 

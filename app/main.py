@@ -48,7 +48,7 @@ def main():
         raise RuntimeError("no choices in response after reading file")
         
     choice = chat.choices[0]
-    print(f"Choice: {choice}", file=sys.stderr)
+    print(f"Choice: {choice.message}", file=sys.stderr)
     if choice.message.tool_call:
         tool_call = choice.message.tool_call
         if tool_call.name == "Read":

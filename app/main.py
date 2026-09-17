@@ -42,17 +42,14 @@ def main():
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response")
 
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!", file=sys.stderr)
     if not chat.choices or len(chat.choices) == 0:
         raise RuntimeError("no choices in response after reading file")
         
     choice = chat.choices[0]
-    print(f"Choice: {choice.message}", file=sys.stderr)
     if choice.message.tool_calls:
         tool_call = choice.message.tool_calls[0]
-        if tool_call.name == "Read":
-            file_path = tool_call.arguments.get("file_path")
+        if tool_call.function.name == "Read":
+            file_path = tool_call.function.arguments.get("file_path")
             if not file_path:
                 raise RuntimeError("file_path argument is missing in tool call")
             try:

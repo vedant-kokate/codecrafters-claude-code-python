@@ -12,8 +12,6 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("-p", required=True)
     args = p.parse_args()
-    print(f"API_KEY: {API_KEY}", file=sys.stderr)
-    print(f"BASE_URL: {BASE_URL}", file=sys.stderr)
     if not API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is not set")
 
@@ -22,6 +20,23 @@ def main():
     chat = client.chat.completions.create(
         model="anthropic/claude-haiku-4.5",
         messages=[{"role": "user", "content": args.p}],
+        tools = [{
+            "type": "function",
+            "function": {
+                "name": "Read",
+                "description": "Read and return the contents of a file",
+                "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                    "type": "string",
+                    "description": "The path to the file to read"
+                    }
+                },
+                "required": ["file_path"]
+                }
+            }
+            }]
     )
 
     if not chat.choices or len(chat.choices) == 0:

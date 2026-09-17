@@ -28,7 +28,27 @@ def get_chat_response(client, messages):
                     "required": ["file_path"]
                 }
             }
-        }]
+        }, {
+            "type": "function",
+            "function": {
+                "name": "Write",
+                "description": "Write content to a file",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "file_path": {
+                            "type": "string",
+                            "description": "The path to the file to write"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "The content to write to the file"
+                        }
+                    },
+                    "required": ["file_path", "content"]
+                }
+            }
+        },]
     )
     return chat
 

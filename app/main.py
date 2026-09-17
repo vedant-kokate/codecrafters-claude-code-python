@@ -50,7 +50,24 @@ def get_chat_response(client, messages):
             }
             }
         }
-        }])
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "Bash",
+            "description": "Execute a shell command",
+            "parameters": {
+            "type": "object",
+            "required": ["command"],
+            "properties": {
+                "command": {
+                "type": "string",
+                "description": "The command to execute"
+                }
+            }
+            }
+        }
+    }])
     return chat
 
 def tool_write(tool_call):
@@ -125,7 +142,16 @@ def main():
             elif tool_call.function.name == "Write":
                 tool_write(tool_call)
                 messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": "File written successfully"})
-
+            elif tool_call.function.name == "Bash":
+                arguments = json.loads(tool_call.function.arguments)
+                command = arguments.get("command")
+                if not command:
+                    raise RuntimeError("command argument is missing in tool call")
+                try:
+                    result = os.popen(command).read()
+                except Exception as e:
+                    raise RuntimeError(f"Failed to execute command {command}: {e}")
+                messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": result})
 
 
 if __name__ == "__main__":

@@ -69,7 +69,7 @@ def main():
                 file_contents = tool_read(tool_call)
                 messages.append({"role": "tool", "content": file_contents, "tool_call_id": tool_call.id})
     final_response = messages[-1]
-    print(final_response["content"])
+    print(final_response.content)
 
 
 if __name__ == "__main__":

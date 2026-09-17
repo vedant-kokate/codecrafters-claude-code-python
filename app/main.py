@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import sys
 
@@ -49,7 +50,8 @@ def main():
     if choice.message.tool_calls:
         tool_call = choice.message.tool_calls[0]
         if tool_call.function.name == "Read":
-            file_path = tool_call.function.arguments.get("file_path")
+            arguments = json.loads(tool_call.function.arguments)
+            file_path = arguments.get("file_path")
             if not file_path:
                 raise RuntimeError("file_path argument is missing in tool call")
             try:

@@ -93,7 +93,25 @@ def main():
 
         choice = chat.choices[0]
         message = choice.message
-        messages.append(message)
+        assistant_message = {
+            "role": "assistant",
+            "content": message.content,
+        }
+
+        if message.tool_calls:
+            assistant_message["tool_calls"] = [
+                {
+                    "id": tool_call.id,
+                    "type": "function",
+                    "function": {
+                        "name": tool_call.function.name,
+                        "arguments": tool_call.function.arguments,
+                    },
+                }
+                for tool_call in message.tool_calls
+            ]
+
+        messages.append(assistant_message)
 
         if not message.tool_calls:
             break

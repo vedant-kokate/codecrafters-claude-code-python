@@ -48,6 +48,7 @@ def main():
         raise RuntimeError("no choices in response after reading file")
         
     choice = chat.choices[0]
+    print(f"Choice: {choice}", file=sys.stderr)
     if choice.message.tool_call:
         tool_call = choice.message.tool_call
         if tool_call.name == "Read":
@@ -61,16 +62,6 @@ def main():
                 raise RuntimeError(f"Failed to read file {file_path}: {e}")
 
             print(f"{file_contents}", file=sys.stderr)
-            # Send the file contents back to the model
-            # chat = client.chat.completions.create(
-            #     model="anthropic/claude-haiku-4.5",
-            #     messages=[
-            #         {"role": "user", "content": args.p},
-            #         {"role": "assistant", "content": choice.message.content},
-            #         {"role": "tool", "name": "Read", "content": file_contents}
-            #     ]
-            # )
-            # error handling
     else:
         print(chat.choices[0].message.content)
 

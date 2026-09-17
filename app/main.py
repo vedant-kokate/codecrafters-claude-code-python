@@ -110,7 +110,9 @@ def main():
                 }
                 for tool_call in message.tool_calls
             ]
-
+        else:
+            print(message.content)
+            break
         messages.append(assistant_message)
 
         if not message.tool_calls:
@@ -123,8 +125,7 @@ def main():
             elif tool_call.function.name == "Write":
                 tool_write(tool_call)
                 messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": "File written successfully"})
-    final_response = messages[-1]
-    print(final_response.content)
+
 
 
 if __name__ == "__main__":

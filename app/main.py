@@ -59,7 +59,7 @@ def main():
 
         choice = chat.choices[0]
         message = choice.message
-        messages.append(message.content)
+        messages.append(message)
 
         if not message.tool_calls:
             break

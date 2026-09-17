@@ -32,6 +32,19 @@ def get_chat_response(client, messages):
     )
     return chat
 
+def tool_write(tool_call):
+    arguments = json.loads(tool_call.function.arguments)
+    file_path = arguments.get("file_path")
+    content = arguments.get("content")
+
+    if not file_path or content is None:
+        raise RuntimeError("file_path or content argument is missing in tool call")
+    try:
+        with open(file_path, "w") as f:
+            f.write(content)
+    except Exception as e:
+        raise RuntimeError(f"Failed to write to file {file_path}: {e}")
+
 def tool_read(tool_call):
     arguments = json.loads(tool_call.function.arguments)
     file_path = arguments.get("file_path")
@@ -68,6 +81,9 @@ def main():
             if tool_call.function.name == "Read":
                 file_contents = tool_read(tool_call)
                 messages.append({"role": "tool", "content": file_contents, "tool_call_id": tool_call.id})
+            elif tool_call.function.name == "Write":
+                tool_write(tool_call)
+                messages.append({"role": "tool", "tool_call_id": tool_call.id})
     final_response = messages[-1]
     print(final_response.content)
 

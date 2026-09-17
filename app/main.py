@@ -8,6 +8,41 @@ from openai import OpenAI
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 
+def get_chat_response(client, messages):
+    chat = client.chat.completions.create(
+        model="anthropic/claude-haiku-4.5",
+        messages=messages,
+        tools=[{
+            "type": "function",
+            "function": {
+                "name": "Read",
+                "description": "Read and return the contents of a file",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "file_path": {
+                            "type": "string",
+                            "description": "The path to the file to read"
+                        }
+                    },
+                    "required": ["file_path"]
+                }
+            }
+        }]
+    )
+    return chat
+
+def tool_read(tool_call):
+    arguments = json.loads(tool_call.function.arguments)
+    file_path = arguments.get("file_path")
+    if not file_path:
+        raise RuntimeError("file_path argument is missing in tool call")
+    try:
+        with open(file_path, "r") as f:
+            file_contents = f.read()
+    except Exception as e:
+        raise RuntimeError(f"Failed to read file {file_path}: {e}")
+    return file_contents
 
 def main():
     p = argparse.ArgumentParser()
@@ -17,52 +52,24 @@ def main():
         raise RuntimeError("OPENROUTER_API_KEY is not set")
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    messages = [{"role": "user", "content": args.p}]
+    while True:
+        chat = get_chat_response(client, messages)
+        if not chat.choices or len(chat.choices) == 0: raise RuntimeError("no choices in response")
 
-    chat = client.chat.completions.create(
-        model="anthropic/claude-haiku-4.5",
-        messages=[{"role": "user", "content": args.p}],
-        tools = [{
-            "type": "function",
-            "function": {
-                "name": "Read",
-                "description": "Read and return the contents of a file",
-                "parameters": {
-                "type": "object",
-                "properties": {
-                    "file_path": {
-                    "type": "string",
-                    "description": "The path to the file to read"
-                    }
-                },
-                "required": ["file_path"]
-                }
-            }
-            }]
-    )
+        choice = chat.choices[0]
+        message = choice.message
+        messages.append(message.content)
 
-    if not chat.choices or len(chat.choices) == 0:
-        raise RuntimeError("no choices in response")
-
-    if not chat.choices or len(chat.choices) == 0:
-        raise RuntimeError("no choices in response after reading file")
-        
-    choice = chat.choices[0]
-    if choice.message.tool_calls:
-        tool_call = choice.message.tool_calls[0]
-        if tool_call.function.name == "Read":
-            arguments = json.loads(tool_call.function.arguments)
-            file_path = arguments.get("file_path")
-            if not file_path:
-                raise RuntimeError("file_path argument is missing in tool call")
-            try:
-                with open(file_path, "r") as f:
-                    file_contents = f.read()
-            except Exception as e:
-                raise RuntimeError(f"Failed to read file {file_path}: {e}")
-
-            print(f"{file_contents}")
-    else:
-        print(chat.choices[0].message.content)
+        if not message.tool_calls:
+            break
+        tool_calls = message.tool_calls
+        for tool_call in tool_calls:
+            if tool_call.function.name == "Read":
+                file_contents = tool_read(tool_call)
+                messages.append({"role": "tool", "content": file_contents, "tool_call_id": tool_call.id})
+    final_response = messages[-1]
+    print(final_response["content"])
 
 
 if __name__ == "__main__":
